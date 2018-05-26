@@ -46,9 +46,10 @@ public class MainActivity extends AppCompatActivity {
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
         String savedKey = dataService.loadSettings(DataService.KEY);
-        String key = textViewPassword.getText().toString();
+        String key = dataService.GetMd5Hash(textViewPassword.getText().toString());
         if( savedKey == null || savedKey.equals(key) )
         {
+            dataService.SetCihperSkip( textViewPassword.getText().toString().length() );
             finish();
         }
         else if( key.isEmpty())
