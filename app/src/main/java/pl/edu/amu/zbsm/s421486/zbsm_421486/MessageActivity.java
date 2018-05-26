@@ -1,11 +1,13 @@
 package pl.edu.amu.zbsm.s421486.zbsm_421486;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import butterknife.BindView;
@@ -60,13 +62,20 @@ public class MessageActivity extends AppCompatActivity {
     @OnClick(R.id.button_save)
     public void saveDataClick(View v)
     {
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+
        dataService.saveSettings(DataService.TEXT, textViewNote.getText().toString());
         if( !textViewPass.getText().toString().isEmpty())
         {
             dataService.saveSettings(DataService.KEY, textViewPass.getText().toString());
+            showMessage("Zapisano dane");
         }
-        showMessage("Zapisano dane?");
-
+        else
+        {
+            dataService.saveSettings(DataService.KEY, textViewPass.getText().toString());
+            showMessage("Nie ustawiles hasla. Dane zostaly zapisane.");
+        }
     }
 
     private void showMessage(String message){

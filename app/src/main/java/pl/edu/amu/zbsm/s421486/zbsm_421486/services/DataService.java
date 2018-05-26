@@ -3,9 +3,6 @@ package pl.edu.amu.zbsm.s421486.zbsm_421486.services;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-/**
- * Created by s421486 on 24.03.2018.
- */
 
 public class DataService {
 
