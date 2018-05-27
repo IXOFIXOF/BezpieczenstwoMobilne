@@ -34,6 +34,7 @@ public class MessageActivity extends AppCompatActivity {
 
 
         dataService = new DataService(this);
+        dataService.Init();
         ButterKnife.bind(this);
 
         String savedKey = dataService.loadSettings(DataService.KEY);
@@ -52,10 +53,18 @@ public class MessageActivity extends AppCompatActivity {
     }
 
     private void loadData() {
-        String text = dataService.GetCipher(dataService.loadSettings(DataService.TEXT));
-        if (text != null) {
-            textViewNote.setText(text);
-        }
+        String text = dataService.loadSettings(DataService.TEXT);
+
+          if( !DataService.PlainPassword.isEmpty())
+          {
+              text = dataService.uncipher( text, DataService.PlainPassword );
+              DataService.PlainPassword = "";
+              if (text != null) {
+                  textViewNote.setText(text);
+              }
+          }
+
+
     }
 
     @OnClick(R.id.button_save)
@@ -65,8 +74,7 @@ public class MessageActivity extends AppCompatActivity {
 
         try {
 
-            dataService.SetCihperSkip( textViewPass.getText().toString().length() );
-            dataService.saveSettings(DataService.TEXT, dataService.MakeCipher( textViewNote.getText().toString()));
+            dataService.saveSettings(DataService.TEXT, dataService.cipher( textViewNote.getText().toString(),textViewPass.getText().toString() ));
 
             if (!textViewPass.getText().toString().isEmpty())
             {

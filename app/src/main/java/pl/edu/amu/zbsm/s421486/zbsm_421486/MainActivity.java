@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         dataService = new DataService(this);
+        dataService.Init();
 
     }
 
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         String key = dataService.GetMd5Hash(textViewPassword.getText().toString());
         if( savedKey == null || savedKey.equals(key) )
         {
-            dataService.SetCihperSkip( textViewPassword.getText().toString().length() );
+            DataService.PlainPassword = textViewPassword.getText().toString();
             finish();
         }
         else if( key.isEmpty())

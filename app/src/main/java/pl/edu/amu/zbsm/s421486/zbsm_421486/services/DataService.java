@@ -11,8 +11,9 @@ public class DataService {
     public static final String TEXT = "tekst";
     public static final String KEY = "klucz";
     public static int CipherSkip = 0;
+    public static String PlainPassword;
+    private Context context;
 
-    private final Context context;
 
     public void SetCihperSkip( int Skip )
     {
@@ -22,6 +23,25 @@ public class DataService {
         this.context = context;
     }
 
+    private char[] cipherAlphabet;
+
+    private int lowerLimit;
+    private int upperLimit;
+
+    public DataService() {
+
+    }
+    public void Init()
+    {
+        PlainPassword = new String("");
+        this.lowerLimit = 32;
+        this.upperLimit = 126;
+        this.cipherAlphabet = new char[upperLimit - lowerLimit + 1];
+        // Grab all the ASCII characters between space and ~, inclusive
+        for (int i = lowerLimit; i <= upperLimit; i++) {
+            cipherAlphabet[i - lowerLimit] = (char) i;
+        }
+    }
     public final String GetMd5Hash( String PasswordToHash )
     {
         if( PasswordToHash.toString().isEmpty() )
@@ -47,32 +67,7 @@ public class DataService {
         }
         return PasswordToHash;
     }
-    public final String MakeCipher( String OriginalMessage )
-    {
 
-        CipherSkip %= 26;
-
-        StringBuilder result = new StringBuilder();
-
-        for (int i = 0; i < OriginalMessage.length(); i++) {
-            result.append((char) ((OriginalMessage.charAt(i) % 97 + CipherSkip) % 26 + 97));
-        }
-
-        return result.toString();
-
-    }
-    public final String GetCipher( String CipherMessage )
-    {
-        CipherSkip %= 26;
-
-        StringBuilder result = new StringBuilder();
-
-        for (int i = 0; i < CipherMessage.length(); i++) {
-            result.append((char) ((CipherMessage.charAt(i) % 97 - CipherSkip) % 26 + 97));
-        }
-
-        return result.toString();
-    }
     public void saveSettings(String key, String value ) throws NoSuchAlgorithmException
     {
         SharedPreferences sharePref = context.getSharedPreferences("zbsm.tekst", Context.MODE_PRIVATE );
@@ -84,6 +79,68 @@ public class DataService {
     {
         SharedPreferences sharePref = context.getSharedPreferences("zbsm.tekst", Context.MODE_PRIVATE );
         return sharePref.getString(key, null);
+    }
+
+    public String cipher(String text, String key) {
+        StringBuilder builder = new StringBuilder(text.length());
+        int keyIndex = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            int pos = (int) c;
+            if (pos < lowerLimit || pos > upperLimit) {
+                builder.append(c);
+            } else {
+                char k = key.charAt(keyIndex);
+                pos = getCharacterPosition(c);
+                int pos2 = getCharacterPosition(k);
+                int sum = (pos + pos2) % cipherAlphabet.length;
+                builder.append(getCharacter(sum));
+                keyIndex = ++keyIndex % key.length();
+            }
+        }
+        return builder.toString();
+    }
+
+    public String uncipher(String cipher, String key) {
+        StringBuilder builder = new StringBuilder(cipher.length());
+        int keyIndex = 0;
+        for (int i = 0; i < cipher.length(); i++) {
+            char c = cipher.charAt(i);
+            int pos = (int) c;
+            if (pos < lowerLimit || pos > upperLimit) {
+                builder.append(c);
+            } else {
+                char k = key.charAt(keyIndex);
+                pos = getCharacterPosition(c);
+                int pos2 = getCharacterPosition(k);
+                int sum = pos - pos2;
+                while (sum < 0) {
+                    sum += cipherAlphabet.length;
+                }
+                sum = sum % cipherAlphabet.length;
+                builder.append(getCharacter(sum));
+                keyIndex = ++keyIndex % key.length();
+            }
+        }
+        return builder.toString();
+    }
+
+    private int getCharacterPosition(char c) {
+        for (int i = 0; i < cipherAlphabet.length; i++) {
+            if (c == cipherAlphabet[i]) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private char getCharacter(int index) {
+        if (index >= 0 && index < cipherAlphabet.length) {
+            return cipherAlphabet[index];
+        } else {
+            return '?';
+        }
     }
 
 }
